@@ -1,0 +1,53 @@
+name: Docker CI — UrbanBasket
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-build-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Pre-check Docker
+        run: |
+          if ! command -v docker &> /dev/null
+          then
+            echo "Docker not found, failing pipeline."
+            exit 1
+          fi
+          echo "Docker is available"
+          docker --version
+
+      - name: Build Docker image
+        run: docker build -t urbanbasket-svc:3 ./flask-app
+
+      - name: Run Docker container
+        run: |
+          # Remove container if it already exists
+          docker rm -f urbanbasket-svc || true
+          # Run the container in detached mode
+          docker run -d -p 12088:5000 --name urbanbasket-svc urbanbasket-svc:3
+          # Give it a moment to start
+          sleep 5
+          # Verify the container is running
+          docker ps | grep urbanbasket-svc
+
+      - name: Test container access
+        run: |
+          # Install curl to test the endpoint
+          sudo apt-get update && sudo apt-get install -y curl
+          # Test the Flask endpoint
+          curl -s http://localhost:12088
+
+      - name: Show container logs
+        if: always()
+        run: |
+          docker logs urbanbasket-svc
