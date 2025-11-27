@@ -28,10 +28,17 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    echo "[INFO] Building Docker image ${DOCKER_IMAGE} from ./flask-app"
-                    docker build -t ${DOCKER_IMAGE} ./flask-app
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
+                                                 usernameVariable: 'DOCKERHUB_USER',
+                                                 passwordVariable: 'DOCKERHUB_PASS')]) {
+                    sh '''
+                        echo "[INFO] Logging in to Docker Hub..."
+                        echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+                        echo "[INFO] Building Docker image ${DOCKER_IMAGE} from ./flask-app"
+                        docker build -t ${DOCKER_IMAGE} ./flask-app
+                    '''
+                }
             }
         }
 
