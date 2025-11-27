@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   run-script:
@@ -12,6 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Make script executable
+        run: chmod +x urbanbasket.sh
+
       - name: Run urbanbasket.sh
         run: ./urbanbasket.sh
-        shell: bash
