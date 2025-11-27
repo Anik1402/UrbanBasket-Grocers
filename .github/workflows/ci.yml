@@ -15,8 +15,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Make script executable
-        run: chmod +x urbanbasket.sh
+      - name: Debug - List files
+        run: ls -la
 
       - name: Run urbanbasket.sh
-        run: ./urbanbasket.sh
+        run: |
+          # Make sure script has correct line endings
+          dos2unix urbanbasket.sh
+          # Make it executable
+          chmod +x urbanbasket.sh
+          # Run with bash explicitly and show output
+          bash -x urbanbasket.sh
+        shell: bash
